@@ -1,2 +1,4 @@
-flask
-pymango
+Flask==2.0.1
+Flask-CORS==3.0.10
+pymongo==3.11.4
+bson==0.5.10

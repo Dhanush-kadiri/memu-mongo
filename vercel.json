@@ -7,10 +7,7 @@
       }
     ],
     "routes": [
-      {
-        "src": "/(.*)",
-        "dest": "memy.py"
-      }
+      { "src": "/(.*)", "dest": "memy.py" }
     ]
   }
   
