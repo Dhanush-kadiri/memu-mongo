@@ -5,13 +5,18 @@ from bson import ObjectId  # Import ObjectId here
 import base64
 from difflib import SequenceMatcher
 from io import BytesIO
+import os
 
 app = Flask(__name__)
 CORS(app, origins=['http://localhost:3000', 'http://192.168.0.101'])
 
 # MongoDB configuration
-client = MongoClient('mongodb://localhost:27017/')
-db = client['myem']  # Database name
+# client = MongoClient('mongodb://localhost:27017/')
+# db = client['myem']  # Database name
+
+mongo_uri = os.getenv('MONGODB_URI', 'mongodb+srv://kadiridhanush143:Dhanush@1438@cluster0.mongodb.net/myem?retryWrites=true&w=majority') 
+client = MongoClient(mongo_uri)
+db = client['myem']
 
 # Collections
 event_images_collection = db['event_images']
