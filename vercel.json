@@ -2,12 +2,12 @@
     "version": 2,
     "builds": [
       {
-        "src": "memy.py",
+        "src": "memu.py",
         "use": "@vercel/python"
       }
     ],
     "routes": [
-      { "src": "/(.*)", "dest": "memy.py" }
+      { "src": "/(.*)", "dest": "memu.py" }
     ]
   }
   
