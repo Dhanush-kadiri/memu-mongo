@@ -1,5 +1,5 @@
 
-from flask import Flask, request, jsonify, send_file, abort
+from flask import Flask, request, jsonify, send_file, abort,send_from_directory
 from flask_cors import CORS
 from pymongo import MongoClient
 from bson import ObjectId
@@ -7,6 +7,7 @@ import base64
 from difflib import SequenceMatcher
 from io import BytesIO
 from urllib.parse import quote_plus
+import os
 
 app = Flask(__name__)
 CORS(app, origins=['http://localhost:3000', 'http://192.168.0.101'])
@@ -25,6 +26,18 @@ agent_onboarding_collection = db['agent_onboarding']
 gallery_collection = db['our_gallery']
 reviews_collection = db['reviews']
 partners_collection = db['partners']
+
+
+
+@app.route('/')
+def home():
+    return jsonify({'message': 'Welcome to the Memu API!'}), 200
+
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico')
+
 
 #Agent adding route
 @app.route('/agents', methods=['POST'])
