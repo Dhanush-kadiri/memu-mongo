@@ -12,12 +12,33 @@ import os
 app = Flask(__name__)
 CORS(app, origins=['http://localhost:3000', 'http://192.168.0.101','https://test1-inky-three.vercel.app'])
 
+# # MongoDB Configuration
+# username = quote_plus("kadiridhanush143")
+# password = quote_plus("Dhanush@1438")
+# mongo_uri = f"mongodb+srv://kadiridhanush143:{password}@memu.ynm46.mongodb.net/?retryWrites=true&w=majority&appName=Memu"
+
+
+
+# client = MongoClient(mongo_uri)
+# db = client['myem']
+
+from urllib.parse import quote_plus
+from pymongo import MongoClient
+
 # MongoDB Configuration
-username = quote_plus("kadiridhanush143")
-password = quote_plus("Dhanush@1438")
-mongo_uri = f"mongodb+srv://kadiridhanush143:{password}@memu.ynm46.mongodb.net/myem?retryWrites=true&w=majority"
-client = MongoClient(mongo_uri)
+username = quote_plus("kadiridhanush143")  # URL encode username if it has special characters
+password = quote_plus("Dhanush@1438")  # URL encode password
+mongo_uri = f"mongodb+srv://{username}:{password}@memu.ynm46.mongodb.net/?retryWrites=true&w=majority&appName=Memu"
+
+client = MongoClient(
+    mongo_uri,
+    serverSelectionTimeoutMS=30000,  # default is 30s
+    socketTimeoutMS=30000,
+    connectTimeoutMS=30000
+)
+
 db = client['myem']
+
 
 # MongoDB Collections
 event_images_collection = db['event_images']
@@ -33,21 +54,61 @@ partners_collection = db['partners']
 def home():
     return jsonify({'message': 'Welcome to the Memu API!'}), 200
 
-
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico')
 
 
+
 #Agent adding route
+# @app.route('/agents', methods=['POST'])
+# def add_agent():
+#     try:
+#         data = request.form
+#         profile_photo = request.files.get('profile_photo')
+#         aadhar_card = request.files.get('aadhar_card')
+#         pan_card = request.files.get('pan_card')
+#         bank_book = request.files.get('bank_book')
+
+#         new_agent = {
+#             'email_address': data['email_address'],
+#             'full_name': data['full_name'],
+#             'fathers_name': data['fathers_name'],
+#             'age': int(data['age']),
+#             'profession': data['profession'],
+#             'full_address': data['full_address'],
+#             'desired_password': data['desired_password'],
+#             'profile_photo': profile_photo.read() if profile_photo else None,
+#             'aadhar_card': aadhar_card.read() if aadhar_card else None,
+#             'pan_card': pan_card.read() if pan_card else None,
+#             'bank_book': bank_book.read() if bank_book else None
+#         }
+
+#         agent_onboarding_collection.insert_one(new_agent)
+#         return jsonify({'message': 'Agent added successfully!'}), 200
+
+#     except Exception as e:
+#         return jsonify({'error': str(e)}), 400
+
+
+
+
 @app.route('/agents', methods=['POST'])
 def add_agent():
     try:
+        print("Form data:", request.form)
+        print("Files:", request.files)
+
         data = request.form
         profile_photo = request.files.get('profile_photo')
         aadhar_card = request.files.get('aadhar_card')
         pan_card = request.files.get('pan_card')
         bank_book = request.files.get('bank_book')
+
+        required_fields = ['email_address', 'full_name', 'fathers_name', 'age', 'profession', 'full_address', 'desired_password']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'error': f'Missing field: {field}'}), 400
 
         new_agent = {
             'email_address': data['email_address'],
@@ -67,16 +128,55 @@ def add_agent():
         return jsonify({'message': 'Agent added successfully!'}), 200
 
     except Exception as e:
+        print("Error:", e)
         return jsonify({'error': str(e)}), 400
 
+
+
+
 #getting all agents
+
+# @app.route('/agents', methods=['GET'])
+# def get_agents():
+#     try:
+#         # Fetch all agents from the MongoDB collection
+#         agents = agent_onboarding_collection.find()
+
+#         # Process the data and convert it into a response-friendly format
+#         agents_data = [
+#             {
+#                 'id': str(agent['_id']),
+#                 'email_address': agent.get('email_address'),
+#                 'full_name': agent.get('full_name'),
+#                 'fathers_name': agent.get('fathers_name'),
+#                 'age': agent.get('age'),
+#                 'profession': agent.get('profession'),
+#                 'full_address': agent.get('full_address'),
+#                 'desired_password': agent.get('desired_password'),
+#                 'profile_photo': base64.b64encode(agent.get('profile_photo', b'')).decode('utf-8') if agent.get('profile_photo') else None,
+#                 'aadhar_card': base64.b64encode(agent.get('aadhar_card', b'')).decode('utf-8') if agent.get('aadhar_card') else None,
+#                 'pan_card': base64.b64encode(agent.get('pan_card', b'')).decode('utf-8') if agent.get('pan_card') else None,
+#                 'other_govt_id': base64.b64encode(agent.get('other_govt_id', b'')).decode('utf-8') if agent.get('other_govt_id') else None
+#             }
+#             for agent in agents
+#         ]
+
+#         # Return the data as a JSON response
+#         return jsonify({'agents': agents_data}), 200
+
+#     except Exception as e:
+#         # Return an error if something goes wrong
+#         return jsonify({'error': str(e)}), 500
+
+
+
+import traceback
+
 @app.route('/agents', methods=['GET'])
 def get_agents():
     try:
-        # Fetch all agents from the MongoDB collection
         agents = agent_onboarding_collection.find()
 
-        # Process the data and convert it into a response-friendly format
         agents_data = [
             {
                 'id': str(agent['_id']),
@@ -90,17 +190,18 @@ def get_agents():
                 'profile_photo': base64.b64encode(agent.get('profile_photo', b'')).decode('utf-8') if agent.get('profile_photo') else None,
                 'aadhar_card': base64.b64encode(agent.get('aadhar_card', b'')).decode('utf-8') if agent.get('aadhar_card') else None,
                 'pan_card': base64.b64encode(agent.get('pan_card', b'')).decode('utf-8') if agent.get('pan_card') else None,
-                'other_govt_id': base64.b64encode(agent.get('other_govt_id', b'')).decode('utf-8') if agent.get('other_govt_id') else None
+                'bank_book': base64.b64encode(agent.get('bank_book', b'')).decode('utf-8') if agent.get('bank_book') else None
             }
             for agent in agents
         ]
 
-        # Return the data as a JSON response
         return jsonify({'agents': agents_data}), 200
 
     except Exception as e:
-        # Return an error if something goes wrong
+        traceback.print_exc()  
         return jsonify({'error': str(e)}), 500
+
+
 
 # Event Image Route
 @app.route('/upload', methods=['POST'])
