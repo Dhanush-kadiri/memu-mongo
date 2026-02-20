@@ -1,6 +1,6 @@
-Flask==2.2.5
+Flask==3.1.0
 Flask-CORS==4.0.1
-Werkzeug==2.2.2
+Werkzeug==3.1.0
 pymongo==3.11.4
 dnspython
 gunicorn
